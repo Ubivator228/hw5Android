@@ -1,0 +1,44 @@
+image: openjdk:17-jdk
+
+variables:
+  PROJECT_NAME: "AVTOBYS KOTLIN DRIVER BOARD APP"
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  CI_SCRIPT_URL: "https://git-server.innoforce.kz/innopay/innoforce-ci-scripts/raw/v2.4"
+  COUNTRY: ${COUNTRY}
+
+stages:
+  - test
+  - build
+
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+# Template for branches
+.branches_template: &branches_template
+  before_script:
+    - export GRADLE_USER_HOME=$CI_PROJECT_DIR/.gradle
+    - chmod +x ./gradlew
+  only:
+    - main
+  tags:
+    - android
+
+test:
+  <<: *branches_template
+  stage: test
+  script:
+    - ./gradlew clean
+    - ./gradlew testDebug
+
+build:
+  <<: *branches_template
+  stage: build
+  script:
+    - ./gradlew clean
+    - ./gradlew assembleRelease
+  artifacts:
+    expire_in: 90 days
+    paths:
+      - app/build/outputs/apk/
